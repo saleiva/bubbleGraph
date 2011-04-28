@@ -1,0 +1,40 @@
+div#container{
+  background: url('../img/bkg.jpg') 0 0 no-repeat;
+  width:1024px;
+  height:560px;
+}
+
+div.bubbleContainer{
+  position: absolute;
+  background: transparent;
+  height:20px;
+  width: 20px;
+  border: 1px solid red;
+  top: 100px;
+  left: 100px;  
+}
+
+div.outerBubble{
+  position: absolute;
+  background: #FFFFFF;
+  border: none;
+  height: 40px;
+  width: 40px;
+  -moz-border-radius:50px;
+  -webkit-border-radius: 50px;
+  opacity: 0.5;
+  top: -10px;
+  left: -10px;
+}
+
+div.innerBubble{
+  position: absolute;
+  background: #000000;
+  border: none;
+  height: 30px;
+  width: 30px;
+  top: -5px;
+  left: -5px;
+  -moz-border-radius:50px; 
+  -webkit-border-radius: 50px;  
+}
