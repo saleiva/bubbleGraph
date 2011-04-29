@@ -82,7 +82,7 @@ $(document).ready(function() {
       top: displacementY,
       opacity: "0"
     }, 1000, function(){
-      $("#"+b).remove();
+      $("#"+b).remove(); 
       }
     );
     
