@@ -3,28 +3,37 @@ $(document).ready(function() {
   //Vars determining the center of the graph
   var offsetScreenX = 510;
   var offsetScreenY = 265;  
-
-  $.getJSON("http://localhost:8888/json/data1.json", function(data) {
-    $.each(data.municipios, function(key, val) {
-      $('#container').append("<div class='bubbleContainer' id='"+key+"'><div class='outerBubble'></div><div class='innerBubble'></div></div>");
-      $('#'+key).css("left",(offsetScreenX).toString()+"px");
-      $('#'+key).css("top",(offsetScreenY).toString()+"px");
-    });
-  });
   
-  setTimeout(function(){setValue("http://localhost:8888/json/data1.json");},2000);
-  setTimeout(function(){setValue("http://localhost:8888/json/data2.json");},4000);
+  var valuesHash = {};
+
+  jQuery.easing.def = "easeInOutCubic";
+
+  function createBubbles(url){
+    $.getJSON(url, function(data) {
+      $.each(data.municipios, function(key, val) {
+        valuesHash[key] = val;
+        $('#container').append("<div class='bubbleContainer' id='"+key+"'><div class='outerBubble'></div><div class='innerBubble'></div></div>");
+        $('#'+key).css("left",(offsetScreenX).toString()+"px");
+        $('#'+key).css("top",(offsetScreenY).toString()+"px");
+        $('#'+key).find('.innerBubble').css("backgroundColor",val[3]);
+      });
+    }); 
+    setValue(url);
+  };
   
   //changes the values on the graph
   function setValue(url){
+    //TODO: VER SI PUEDO EVITAR LEER EL JSON (AL MENOS AL PRINCIPIO)
     $.getJSON(url, function(data) {
       $.each(data.municipios, function(key, v) {
-        updateBubble('#'+key,offsetScreenX+parseInt(v[0]),offsetScreenY+parseInt(v[1]),v[2]);
+        valuesHash[key] = v;
+        updateBubble('#'+key,offsetScreenX+parseInt(v[0]),offsetScreenY+parseInt(v[1]),v[2],v[3]);
       });
     });
   }
   
-  function updateBubble (bubble,x,y,val){
+  //Function for update the values of the bubbles that are being visualized
+  function updateBubble (bubble,x,y,val,c){
     var offset = Math.abs(parseInt($(bubble).find('.outerBubble').css('top')) + (parseInt($(bubble).find('.outerBubble').css('height')) - val) / 2)*-1;
 
     $(bubble).animate({
@@ -36,16 +45,64 @@ $(document).ready(function() {
         height: val.toString(),
         width: val.toString(),
         top: offset.toString(),
-        left: offset.toString()
+        left: offset.toString(),
       }, 1000);
     
     $(bubble).find('.innerBubble').animate({
         height: (val-10).toString(),
         width: (val-10).toString(),
         top: (offset + 5).toString(),
-        left: (offset + 5).toString()
+        left: (offset + 5).toString(),
+        backgroundColor: c.toString()        
       }, 1000);    
   }
+
+  function goDeeper(url){
+    for (key in valuesHash){
+      destroyBubble(key);
+      //TODO: REGENERATE GRAPH WITH NEW VALUES
+    };
+  };
   
+  function destroyBubble(b){
+    console.log("destroy"+b);    
+    if (parseInt($("#"+b).css("left")) < offsetScreenX){
+      displacementX = "-=30px";
+    }else{
+      displacementX = "+=30px";
+    }
+    if (parseInt($("#"+b).css("top")) < offsetScreenY){
+      displacementY = "+=30px";
+    }else{
+      displacementY = "+=30px";
+    }
+    
+    $("#"+b).animate({
+      left: displacementX,
+      top: displacementY,
+      opacity: "0"
+    }, 1000, function(){
+      $("#"+b).remove();
+      }
+    );
+    
+  }
   
+  $(".innerBubble").live({
+    mouseenter: function () {
+      console.log("overing");
+      $(this).css("backgroundColor","#000000");
+    },
+    mouseleave: function () {
+      $(this).css("backgroundColor",valuesHash[$(this).parent().attr('id')][3]);
+    }
+  });
+  
+  $(".innerBubble").live('click', function() {
+    goDeeper("/json/data"+(Math.floor(Math.random()*2)+1)+".json");
+  });
+  
+  //INIT CODE
+  createBubbles("/json/data"+(Math.floor(Math.random()*2)+1)+".json");
+    
 });
