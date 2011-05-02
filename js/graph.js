@@ -5,16 +5,21 @@ $(document).ready(function() {
   var offsetScreenY = 265;  
   
   var valuesHash = {};
-
+  var nBubbles = 0;
+  var deeperURL = "";
+  
   jQuery.easing.def = "easeInOutCubic";
 
   function createBubbles(url){
+    console.log("creating...");
     $.getJSON(url, function(data) {
       $.each(data.municipios, function(key, val) {
         valuesHash[key] = val;
+        nBubbles = nBubbles+1;
         $('#container').append("<div class='bubbleContainer' id='"+key+"'><div class='outerBubble'></div><div class='innerBubble'></div></div>");
         $('#'+key).css("left",(offsetScreenX).toString()+"px");
         $('#'+key).css("top",(offsetScreenY).toString()+"px");
+        $('#'+key).css("opacity","0");
         $('#'+key).find('.innerBubble').css("backgroundColor",val[3]);
       });
     }); 
@@ -39,6 +44,7 @@ $(document).ready(function() {
     $(bubble).animate({
       left: x.toString(),
       top: y.toString(),
+      opacity: "1"
     }, 1000);
     
     $(bubble).find('.outerBubble').animate({
@@ -58,36 +64,31 @@ $(document).ready(function() {
   }
 
   function goDeeper(url){
+    deeperURL = url;
     for (key in valuesHash){
+      //Destroy Bubbles
       destroyBubble(key);
-      //TODO: REGENERATE GRAPH WITH NEW VALUES
     };
   };
   
   function destroyBubble(b){
-    console.log("destroy"+b);    
-    if (parseInt($("#"+b).css("left")) < offsetScreenX){
-      displacementX = "-=30px";
-    }else{
-      displacementX = "+=30px";
-    }
-    if (parseInt($("#"+b).css("top")) < offsetScreenY){
-      displacementY = "+=30px";
-    }else{
-      displacementY = "+=30px";
-    }
-    
-    $("#"+b).animate({
+    (parseInt($("#"+b).css("left")) < offsetScreenX) ? displacementX = "-=30px" : displacementX = "+=30px";
+    (parseInt($("#"+b).css("top")) < offsetScreenY) ? displacementY = "-=30px" : displacementY = "+=30px";
+    $("#"+key).animate({
       left: displacementX,
       top: displacementY,
       opacity: "0"
-    }, 1000, function(){
-      $("#"+b).remove(); 
+    }, 500, function(){
+        console.log("remove "+b);
+        $("#"+b).remove();
+        nBubbles=nBubbles-1;
+        if(nBubbles==0){
+          createBubbles(deeperURL);
+        }
       }
     );
+  };
     
-  }
-  
   $(".innerBubble").live({
     mouseenter: function () {
       console.log("overing");
